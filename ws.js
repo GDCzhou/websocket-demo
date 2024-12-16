@@ -29,9 +29,10 @@ function useWebSocket(wsUrl, options) {
   // heartbeat content
   var heartbeatInterval = 3000; // 心跳间隔时间，单位毫秒
   var heartbeatTimer = null; // 心跳定时器
-  var timeout = 5000; // 心跳超时时间，单位毫秒
+  var timeout = 15000; // 心跳超时时间，单位毫秒
   var heartBeatMsg = "ping"; // 心跳内容
-  var heartBeat = options.heartBeat
+  var heartBeat = options.heartBeat;
+  var pongtimer = null;
   if (heartBeat) {
       heartBeatMsg = heartBeat.message || heartBeatMsg
       heartbeatInterval = heartBeat.interval || heartbeatInterval
@@ -77,6 +78,8 @@ function useWebSocket(wsUrl, options) {
 
     ws.onmessage = function (event) {
     //   console.log("收到消息", event.data);
+      clearTimeout(pongtimer)
+      pongtimer = null
       if (onMessage) {
         onMessage(event.data);
       }
@@ -94,6 +97,10 @@ function useWebSocket(wsUrl, options) {
     heartbeatTimer = setInterval(() => {
         console.log(heartBeatMsg);
       ws.send(heartBeatMsg);
+      if (pongtimer != null) return;
+      pongtimer = setTimeout(() => {
+        closeWebsocket();
+      }, timeout)
     }, heartbeatInterval);
   }
 
@@ -106,7 +113,7 @@ function useWebSocket(wsUrl, options) {
   }
 
   function sendMsg(msg) {
-    if (!status && !ws) return;
+    if (status !== 'open' || !ws) return;
     ws.send(msg);
   }
   return {

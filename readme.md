@@ -26,7 +26,7 @@ var options = {
     heartBeat: {
         message: "ping",
         interval: 5000,
-        timeout: 3000,
+        timeout: 5000,
     }
 }
 var url = "ws://localhost:8080/ws";
